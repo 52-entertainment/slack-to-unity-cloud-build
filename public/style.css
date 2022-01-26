@@ -1,0 +1,9 @@
+body {
+    font-family: "Helvetica Neue", Arial;
+    font-size: 0.5cm;
+}
+.content {
+    margin: auto;
+    padding: 40px;
+    max-width: 600px;
+}
