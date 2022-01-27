@@ -11,7 +11,7 @@ function sendMessageToSlack(message, callback) {
 		method: "post",
 		url: "https://slack.com/api/chat.postMessage",
 		data: {
-			channel: "#automated_build",
+			channel: process.env.slackChannel,
 			text: message
 		},
 		headers: {
