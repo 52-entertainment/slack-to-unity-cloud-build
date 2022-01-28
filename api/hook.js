@@ -22,6 +22,7 @@ function getStatusEmoji(status){
 			return '⏳';
 		case 'started':
 			return '🚀';
+		case 'canceled':
 		case 'failed':
 			return '❌';
 		case 'success':
@@ -68,7 +69,7 @@ router.post('/', function (req, res, next) {
 		});
 	}
 
-	const message = `Build *${target.shortname} ${buildNumber}*\nStatus: \`${buildStatus}${getStatusEmoji(buildStatus)}\`\nTarget: \`${buildTargetName}\``;
+	const message = `Build *${target.shortname} ${buildNumber}*\nStatus: ${buildStatus}${getStatusEmoji(buildStatus)}\nTarget: \`${buildTargetName}\``;
 
 	slack.sendMessageToSlack(message, function (err, result) {
 		if (err) console.log("slack error : " + err);

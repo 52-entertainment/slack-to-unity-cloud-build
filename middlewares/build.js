@@ -39,12 +39,12 @@ function build(order, callback) {
 			const target = params[3];
 			cloudbuild.build(projectName, branchName, target, function (err, data) {
 				if (err) {
-					const msgToSend = `🛑 *Failed while trying to build* 🛑\n${err}\n${data}`;
+					const msgToSend = `🛑 *Failed while requesting a build slot* 🛑\n${err}\n${data}`;
 					slack.sendMessageToSlack(msgToSend, function (err) {
 						callback(err);
 					});
 				} else {
-					const msgToSend = `Build launched for project ${projectName} on branch \`${branchName}\` for target: \`${target}\``;
+					const msgToSend = `Requesting build for project *${projectName}* on branch \`${branchName}\` for target: \`${target}\``;
 					slack.sendMessageToSlack(msgToSend, function (err) {
 						callback(err);
 					});
