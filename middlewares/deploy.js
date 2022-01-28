@@ -26,11 +26,11 @@ function runScript(commands, callback) {
 				}, 10000);
 			});
 		}).connect({
-			host: process.env.SSH_HOST,
+			host: config.ssh.host,
 			port: 22,
-			username: process.env.SSH_USER,
-			passphrase: process.env.SSH_PASS,
-			privateKey: readFileSync(process.env.SSH_KEYFILE)
+			username: config.ssh.user,
+			passphrase: config.ssh.pass,
+			privateKey: readFileSync(config.ssh.keyfile)
 		});
 	}, 30000);
 }
