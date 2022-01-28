@@ -18,13 +18,22 @@ router.post('/', function (req, res, next) {
 				console.log("Got event");
 				if (req.body.event.text == "Un café ?") {
 					console.log(req.body.event.text);
-					var msgToSend = "Et un café un ! ";
+					const msgToSend = "Et un café un ! ";
 					slack.sendMessageToSlack(msgToSend, function (err, result) {
 						console.log("slack error : " + err);
 						console.log("slack message : " + result);
 					});
 					return res.status(200).send("☕️");
 				}
+				if (req.body.event.text.toLowerCase().startsWith("help")) {
+					const msgToSend = `${build.help()}\n${cancel.help()}`
+					slack.sendMessageToSlack(msgToSend, function (err, result) {
+						console.log("slack error : " + err);
+						console.log("slack message : " + result);
+					});
+					return res.status(200).send("Got help");
+				}
+
 				if (req.body.event.text.toLowerCase().startsWith("buildme")) {
 					console.log(req.body.event.text);
 					build.build(req.body.event.text, function (err) {

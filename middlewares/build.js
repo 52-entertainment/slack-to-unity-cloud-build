@@ -1,77 +1,81 @@
-var slack = require('./slack');
+const slack = require('./slack');
+const cloudbuild = require('./cloudbuild');
+const baseUsage = "`buildme <project> <git-ref> <target>`";
+function getUsageString(){
+	if (!config.hasOwnProperty('projects')) {
+		return `Usage: ${baseUsage}\n*⚠️ Warning: no valid projects found in \`config.yaml\`*`;
+	}
+	const projects = Object.keys(config.projects);
+	if (projects.length===0){
+		return `Usage: ${baseUsage}\n*⚠️ Warning: no valid projects found in \`config.yaml\`*`;
+	}
+	const project = config.projects[projects[0]];
+	if (!project.hasOwnProperty('targets') || Object.keys(project.targets).length === 0){
+		return `Usage: ${baseUsage}\n*⚠️ Warning: no valid projects found in \`config.yaml\`*`;
+	}
+	const target = Object.keys(project.targets)[0];
+	return `Usage: ${baseUsage}\n_e.g_: \`buildme ${projects[0]} feature/more-lasers ${target}\``
+}
+
+const help = ()=>`Use \`buildme\` to launch builds:\n${getUsageString().split('\n').map(s=>`\t${s}`).join('\n')}`
 
 function build(order, callback) {
-	var params = order.split(' ');
-	if (params.length == 1) {
-		unknownMessage(function (err) {
-			callback(err);
-			
-		});
-	} else if (params.length == 2) {
-		if (params[1] == "?") {
-			helpMessage(function (err) {
-				callback(err);
-				
-			});
-		} else {
-			unknownMessage(function (err) {
-				callback(err);
-				
-			});
-		}
-
-	} else if (params.length == 4) {
-
-		var cloudbuild = require('./cloudbuild');
-		var projectname = params[1];
-		var branchName = params[2];
-		var target = params[3];
-		cloudbuild.build(projectname, branchName, target, function (err, data) {
-			if (err) {
-				var msgToSend = "CloudBuilder erreur : \n" + err + "\n" + data;
-				slack.sendMessageToSlack(msgToSend, function (err, result) {
+	const params = order.split(' ');
+	switch (params.length) {
+		case 2:
+			if (params[1] === "?") {
+				helpMessage(function (err) {
 					callback(err);
-					
 				});
 			} else {
-				var msgToSend = "CloudBuilder launched on branch + " + branchName + " for " + target;
-				slack.sendMessageToSlack(msgToSend, function (err, result) {
-
+				unknownMessage(function (err) {
 					callback(err);
-					
 				});
 			}
+			break;
+		case 4:
+			const projectName = params[1];
+			const branchName = params[2];
+			const target = params[3];
+			cloudbuild.build(projectName, branchName, target, function (err, data) {
+				if (err) {
+					const msgToSend = `🛑 *Failed while trying to build* 🛑\n${err}\n${data}`;
+					slack.sendMessageToSlack(msgToSend, function (err) {
+						callback(err);
+					});
+				} else {
+					const msgToSend = `Build launched for project ${projectName} on branch \`${branchName}\` for target: \`${target}\``;
+					slack.sendMessageToSlack(msgToSend, function (err) {
+						callback(err);
+					});
+				}
 
-		})
-	} else {
-		unknownMessage(function (err) {
-			callback(err);
-			
-		});
+			})
+			break;
+		default:
+			unknownMessage(function (err) {
+				callback(err);
+			});
+			break;
 	}
 
 }
 
 function helpMessage(callback) {
-	var msgToSend = "CloudBuilder automated launcher";
-	msgToSend += "\nusage : buildme <vri/vro> <git branch> <dev/prod>"
-	slack.sendMessageToSlack(msgToSend, function (err, result) {
-
+	const msgToSend = `Cloud build automated launcher\n${getUsageString()}`
+	slack.sendMessageToSlack(msgToSend, function (err) {
 		callback(err);
 	});
 }
 
 function unknownMessage(callback) {
-	var msgToSend = "commande build inconnue";
-	slack.sendMessageToSlack(msgToSend, function (err, result) {
-
+	const msgToSend = `Invalid command\n${getUsageString()}`
+	slack.sendMessageToSlack(msgToSend, function (err) {
 		callback(err);
 	});
 }
 
-
 module.exports = {
-	build: function (order, callback) {
-		build(order, callback);
-	}
+	build: build,
+	help: help
 }

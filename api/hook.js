@@ -16,6 +16,21 @@ function formatDate() {
 	return [year, month, day].join('');
 }
 
+function getStatusEmoji(status){
+	switch (status){
+		case 'queued':
+			return '⏳';
+		case 'started':
+			return '🚀';
+		case 'failed':
+			return '❌';
+		case 'success':
+			return '👍';
+		default:
+			return '';
+	}
+}
+
 
 router.get('/', function (req, res, next) {
 
@@ -28,39 +43,34 @@ router.post('/', function (req, res, next) {
 		console.log("Invalid token")
 		return res.status(403).send("Invalid token");
 	}
-	var buildNumber = req.body.buildNumber
-	var buildStatus = req.body.buildStatus;
-	var buildTargetName = req.body.buildTargetName;
-
-	if (buildStatus == "success" && buildTargetName == "VRO2K16 WebGL GS Beta 2 Dev") {
-		deploy.deployVRO("./deploy_wp.sh", function (err) {
-			var result = "https://www-dev.virtualregatta.com/fr/offshore-jeu?versionRelease=" + formatDate() + "-" + req.body.buildNumber;
-			slack.sendMessageToSlack(result, function (err, result) {
-				console.log("slack error : " + err);
-				console.log("slack message : " + result);
-
-				//return res.status(200).send({result: true,errorMessage : null, data : {"elements":0}});
-			});
+	const buildNumber = req.body.buildNumber
+	const buildStatus = req.body.buildStatus;
+	const buildTargetName = req.body.buildTargetName;
+	if (!config.targets.hasOwnProperty(buildTargetName)) {
+		slack.sendMessageToSlack(`Unknown build target: ${buildTargetName}`, function (err, result) {
+			if (err) console.log("slack error : " + err);
+			if (result) console.log("slack message : " + result);
 		});
+		return res.status(500).send(`Unknown build target: ${buildTargetName}`);
 	}
-	if (buildStatus == "success" && buildTargetName == "VRO2K16 WebGL GS Beta 2") {
-		deploy.deployVRO("./deploy_wp.sh -p", function (err) {
-			var result = "https://www.virtualregatta.com/fr/offshore-jeu?versionRelease=" + formatDate() + "-" + req.body.buildNumber;
+	
+	if (buildStatus === 'success'){
+		deploy.runScript(target.deploy, ()=>{
+			const result = target.urlTemplate
+				.replaceAll('{date}', formatDate)
+				.replaceAll('{buildNumber}', buildNumber)
 			slack.sendMessageToSlack(result, function (err, result) {
-				console.log("slack error : " + err);
-				console.log("slack message : " + result);
-
-				//return res.status(200).send({result: true,errorMessage : null, data : {"elements":0}});
+				if (err) console.log("slack error : " + err);
+				if (result) console.log("slack message : " + result);
 			});
 		});
 	}
 
-	var message = "Build VRO" + req.body.buildNumber;
-	message += " status " + req.body.buildStatus;
-	message += " target " + req.body.buildTargetName;
+	const message = `Build *${target.shortname} ${buildNumber}*\nStatus: \`${buildStatus}${getStatusEmoji(buildStatus)}\`\nTarget: \`${buildTargetName}\``;
 
-	slack.sendMessageToSlack(message, function (err, message) {
-		console.log(req.body);
+	slack.sendMessageToSlack(message, function (err, result) {
+		if (err) console.log("slack error : " + err);
+		if (result) console.log("slack message : " + result);
 		return res.status(200).send({result: true, errorMessage: null, data: {"elements": 0}});
 	});
 

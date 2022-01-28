@@ -1,32 +1,41 @@
-var slack = require('./slack');
-var cloudBuild = require('./cloudbuild');
+const slack = require('./slack');
+const cloudBuild = require('./cloudbuild');
 
+const baseUsage = "`buildcancel <project>`";
+function getUsageString(){
+	if (!config.hasOwnProperty('projects')) {
+		return `Usage: ${baseUsage}\n*⚠️ Warning: no valid projects found in \`config.yaml\`*`;
+	}
+	const projects = Object.keys(config.projects);
+	if (projects.length===0){
+		return `Usage: ${baseUsage}\n*⚠️ Warning: no valid projects found in \`config.yaml\`*`;
+	}
+	return `Usage: ${baseUsage}\n_e.g_: \`buildcancel ${projects[0]}\``
+}
+
+const help = ()=>`Use \`buildcancel\` to cancel builds:\n${getUsageString().split('\n').map(s=>`\t${s}`).join('\n')}`
 
 function cancel(order, callback) {
-	var params = order.split(' ');
-	if (params.length == 2) {
+	const params = order.split(' ');
+	if (params.length === 2) {
 
-		if (params[1] == "?") {
+		if (params[1] === "?") {
 			helpMessage(function (err) {
 				callback(err);
 				
 			});
 		} else {
-			var cloudbuild = require('./cloudbuild');
-			var projectname = params[1];
-			cloudBuild.cancelAllBuild(projectname, function (err, data) {
+			const projectName = params[1];
+			cloudBuild.cancelAllBuild(projectName, function (err, data) {
 				if (err) {
-					var msgToSend = "CloudBuilder buildcancel en erreur : \n" + err + "\n" + data;
-					slack.sendMessageToSlack(msgToSend, function (err, result) {
-						callback(err);
-						
+					const msgToSend = `🛑 *Failed while trying to cancel builds* 🛑\n${err}\n${data}`;
+					slack.sendMessageToSlack(msgToSend, function (err) {
+						callback(err)
 					});
 				} else {
-					var msgToSend = "CloudBuilder annulation réalisée sur le projet " + projectname + " pour tous les cibles";
-					slack.sendMessageToSlack(msgToSend, function (err, result) {
-
+					const msgToSend = `Builds canceled for project \`${projectName}\``;
+					slack.sendMessageToSlack(msgToSend, function (err) {
 						callback(err);
-						
 					});
 				}
 
@@ -43,8 +52,7 @@ function cancel(order, callback) {
 
 
 function helpMessage(callback) {
-	var msgToSend = "CloudBuilder buildcancel will cancell all currently build for a target";
-	msgToSend += "\nusage : buildcancel <vri/vro>"
+	const msgToSend = `Cancel ongoing builds\n${getUsageString()}`
 	slack.sendMessageToSlack(msgToSend, function (err, result) {
 
 		callback(err);
@@ -52,16 +60,14 @@ function helpMessage(callback) {
 }
 
 function unknownMessage(callback) {
-	var msgToSend = "commande build inconnue";
+	const msgToSend = `Invalid command\n${getUsageString()}`
 	slack.sendMessageToSlack(msgToSend, function (err, result) {
-
 		callback(err);
 	});
 }
 
 
 module.exports = {
-	cancel: function (order, callback) {
-		cancel(order, callback);
-	}
+	cancel: cancel,
+	help: help
 }

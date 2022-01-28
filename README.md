@@ -19,6 +19,7 @@ slack:
   channel: "#channel-to-post-to"
   verification: shared secret with slack
 unity:
+  org: MyUnityOrg
   baseUrl: https://build-api.cloud.unity3d.com/api/v1
   apiKey: api key from unity
   secret: shared secret with unity
@@ -27,6 +28,25 @@ ssh:
   user: builduser
   pass: sshpassword
   keyfile: ssh.key
+projects:
+  CoolGame:
+    id: cool-game
+    targets:
+      dev: cool-game-webgl-dev
+      prod: cool-game-webgl
+targets:
+  "Cool Game WebGL Dev":
+    shortname: Dev build
+    urlTemplate: "https://your.website.com/game?version={date}-{buildNumber}-beta"
+    deploy:
+      - cd /to/deployscript
+      - ./deploy.sh
+  "Cool Game WebGL":
+    shortname: Production
+    urlTemplate: "https://your.website.com/game?version={date}-{buildNumber}"
+    deploy:
+      - cd /to/deployscript
+      - ./deploy.sh --prod
 ```
 
 ### Build and run

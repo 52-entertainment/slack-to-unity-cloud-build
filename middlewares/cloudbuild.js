@@ -105,41 +105,48 @@ function getProjectId(projectName) {
 
 
 function build(projectname, branchName, target, callback) {
-	const orgid = "regatta";
-	const projectid = getProjectId(projectname);
-	const buildtargetid = getTarget(projectname, target)
-	var url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}`;
+	const orgid = config.unity.org;
+	if (!config.projects.hasOwnProperty(projectname)){
+		return callback(`No project named ${projectname}`);
+	} 
+	const project = config.projects[projectname];
+	if (!project.hasOwnProperty(targets) || project.targets.length === 0) {
+		return callback(`Project ${projectname} has no targets`);
+	}
+	if (!project.targets.hasOwnProperty(target)){
+		return callback(`No target named ${target} in ${projectname}`);
+	}
+	const projectid = project.id;
+	const buildtargetid = project.targets[target]
+	const url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}`;
 	httpGet(url, function (err, data) {
-		if (err) return callback(err, "getBuildTarget" + url);
+		if (err) return callback(err, "Unable to get build target" + url);
 		data.settings.scm.branch = branchName;
 		httpPut(url, data, function (err, _) {
-			if (err) return callback(err, "updateBranchInBuildTarget" + url);
-			var url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`;
-
-			httpPost(url, function (err) {
-				callback(err, "buildTarget" + url);
+			if (err) return callback(err, "Unable to update branch" + url);
+			const buildUrl = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`;
+			httpPost(buildUrl, function (err) {
+				if (err) return callback(err, "Unable to build target" + url);
+				callback(err, "Built target" + buildUrl);
 			})
 		});
 	});
 }
 
 function cancelAllBuild(projectname, callback) {
-	getProjectId(projectname, function (err, projectid) {
-		var orgid = "regatta";
-
-		var url = config.unity.baseUrl +
-			`/orgs/${orgid}/projects/${projectid}/buildtargets/_all/builds`;
-		deleteCall(url, function (err, data) {
-			callback(err, "buildTarget" + url);
-		})
+	const orgid = config.unity.org;
+	if (!config.projects.hasOwnProperty(projectname)){
+		console.log(`No project named ${projectname}`);
+		return;
+	}
+	const projectid = project.id;
+	const url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/_all/builds`;
+	deleteCall(url, function (err, data) {
+		callback(err, "buildTarget" + url);
 	})
 }
 
 module.exports = {
-	build: function (projectname, branchName, target, callback) {
-		build(projectname, branchName, target, callback);
-	},
-	cancelAllBuild: function (projectname, callback) {
-		cancelAllBuild(projectname, callback);
-	},
+	build: build,
+	cancelAllBuild: cancelAllBuild
 }

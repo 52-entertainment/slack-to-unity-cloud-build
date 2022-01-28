@@ -9,8 +9,6 @@ const path = require('path');
 const app = express();
 global.config = yaml.parse(readFileSync('config.yaml', 'utf8'))
 
-console.log(config)
-
 const port = config.port || process.env.port || 4000
 
 
@@ -39,12 +37,8 @@ app.get('/', function (req, res) {
 	res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 app.use('/', express.static("public"));
-var hookAPIRoutes = require('./api/hook');
-app.use('/api/hook', hookAPIRoutes);
-var hookVRIAPIRoutes = require('./api/hookVRI');
-app.use('/api/hookVRI', hookVRIAPIRoutes);
-var slackhookAPIRoutes = require('./api/slackhook');
-app.use('/api/slackhook', slackhookAPIRoutes);
+app.use('/api/hook', require('./api/hook'));
+app.use('/api/slackhook', require('./api/slackhook'));
 
 app.use(function (req, res, next) {
 	res.locals.user = req.user;
