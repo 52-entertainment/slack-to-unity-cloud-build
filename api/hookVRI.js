@@ -24,6 +24,10 @@ router.get('/', function (req, res, next) {
 
 })
 router.post('/', function (req, res, next) {
+	if (req.headers.authorization !== `Token ${process.env.UnityCloudBuildSecret}`) {
+		console.log("Invalid token")
+		return res.status(403).send("Invalid token");
+	}
 	var buildNumber = req.body.buildNumber
 	var buildStatus = req.body.buildStatus;
 	var buildTargetName = req.body.buildTargetName;
