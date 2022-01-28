@@ -1,4 +1,5 @@
-require('dotenv').config();
+const yaml = require('yaml');
+const {readFileSync} = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -6,17 +7,20 @@ const cookieParser = require('cookie-parser');
 const flash = require('express-flash');
 const path = require('path');
 const app = express();
+global.config = yaml.parse(readFileSync('config.yaml', 'utf8'))
 
-const port = process.env.port || 4000
+console.log(config)
+
+const port = config.port || process.env.port || 4000
 
 
-	app.use(bodyParser.json());       // to support JSON-encoded bodies
+app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 	extended: true
 }));
 app.use(cookieParser());
 app.use(session({
-	secret: process.env.secretKey,
+	secret: config.key,
 	resave: false,
 	saveUninitialized: true,
 	cookie: {secure: false}

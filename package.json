@@ -17,6 +17,7 @@
     "express-flash": "0.0.2",
     "express-session": "^1.17.1",
     "express-sessions": "^1.0.6",
-    "ssh2": "^0.8.9"
+    "ssh2": "^0.8.9",
+    "yaml": "^1.10.2"
   }
 }

@@ -6,7 +6,7 @@ async function deleteCall(url, cb) {
 		method: "delete",
 		url: url,
 		headers: {
-			Authorization: "Basic " + process.env.UnityVROCloudBuildApiKey,
+			Authorization: "Basic " + config.unity.apiKey,
 			"Content-Type": "application/json"
 		}
 	}).then(response => {
@@ -24,7 +24,7 @@ async function httpGet(url, cb) {
 		method: "get",
 		url: url,
 		headers: {
-			Authorization: "Basic " + process.env.UnityVROCloudBuildApiKey,
+			Authorization: "Basic " + config.unity.apiKey,
 			"Content-Type": "application/json"
 		}
 	}).then(response => {
@@ -42,7 +42,7 @@ async function httpPut(url, data, cb) {
 		method: "put",
 		url: url,
 		headers: {
-			Authorization: "Basic " + process.env.UnityVROCloudBuildApiKey,
+			Authorization: "Basic " + config.unity.apiKey,
 			"Content-Type": "application/json"
 		},
 		data: data
@@ -61,7 +61,7 @@ async function httpPost(url, cb) {
 		method: "post",
 		url: url,
 		headers: {
-			Authorization: "Basic " + process.env.UnityVROCloudBuildApiKey,
+			Authorization: "Basic " + config.unity.apiKey,
 			"Content-Type": "application/json"
 		}
 	}).then(response => {
@@ -108,13 +108,13 @@ function build(projectname, branchName, target, callback) {
 	const orgid = "regatta";
 	const projectid = getProjectId(projectname);
 	const buildtargetid = getTarget(projectname, target)
-	var url = `${process.env.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}`;
+	var url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}`;
 	httpGet(url, function (err, data) {
 		if (err) return callback(err, "getBuildTarget" + url);
 		data.settings.scm.branch = branchName;
 		httpPut(url, data, function (err, _) {
 			if (err) return callback(err, "updateBranchInBuildTarget" + url);
-			var url = `${process.env.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`;
+			var url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`;
 
 			httpPost(url, function (err) {
 				callback(err, "buildTarget" + url);
@@ -127,7 +127,7 @@ function cancelAllBuild(projectname, callback) {
 	getProjectId(projectname, function (err, projectid) {
 		var orgid = "regatta";
 
-		var url = process.env.baseUrl +
+		var url = config.unity.baseUrl +
 			`/orgs/${orgid}/projects/${projectid}/buildtargets/_all/builds`;
 		deleteCall(url, function (err, data) {
 			callback(err, "buildTarget" + url);

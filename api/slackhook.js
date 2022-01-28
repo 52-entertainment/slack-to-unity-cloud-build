@@ -11,7 +11,7 @@ router.post('/', function (req, res, next) {
 	} else {
 		console.log(req.body)
 		if (req.body.type == "event_callback") {
-			if (req.body.token !== process.env.slackVerification) {
+			if (req.body.token !== config.slack.verification) {
 				return res.status(403).send("Invalid token");
 			}
 			if (req.body.hasOwnProperty("event")) {

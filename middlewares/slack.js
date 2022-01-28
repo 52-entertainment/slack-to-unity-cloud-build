@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const qs = require('qs');
 const {hasUncaughtExceptionCaptureCallback} = require('process');
 // fetch this from environment variables
-const slackSigningSecret = process.env.slackSigningSecret;
+const slackSigningSecret = config.slack.signingSecret;
 
 
 function sendMessageToSlack(message, callback) {
@@ -11,11 +11,11 @@ function sendMessageToSlack(message, callback) {
 		method: "post",
 		url: "https://slack.com/api/chat.postMessage",
 		data: {
-			channel: process.env.slackChannel,
+			channel: config.slack.channel,
 			text: message
 		},
 		headers: {
-			Authorization: "Bearer " + process.env.slackToken
+			Authorization: "Bearer " + config.slack.token
 		}
 	}).then(response => {
 		callback(null);
