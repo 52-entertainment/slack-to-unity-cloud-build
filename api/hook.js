@@ -54,6 +54,8 @@ router.post('/', function (req, res, next) {
 		return res.status(500).send(`Unknown build target: ${buildTargetName}`);
 	}
 	
+	const target = config.targets[buildTargetName];
+	
 	if (buildStatus === 'success'){
 		deploy.runScript(target.deploy, ()=>{
 			const result = target.urlTemplate
