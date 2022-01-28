@@ -60,8 +60,8 @@ router.post('/', function (req, res, next) {
 	if (buildStatus === 'success'){
 		deploy.runScript(target.deploy, ()=>{
 			const result = target.urlTemplate
-				.replaceAll('{date}', formatDate)
-				.replaceAll('{buildNumber}', buildNumber)
+				.replace(/{date}/g, formatDate())
+				.replace(/{buildNumber}/g, buildNumber)
 			slack.sendMessageToSlack(result, function (err, result) {
 				if (err) console.log("slack error : " + err);
 				if (result) console.log("slack message : " + result);
