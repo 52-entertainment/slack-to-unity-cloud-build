@@ -14,7 +14,7 @@ router.post('/', function (req, res, next) {
 			if (req.body.token !== config.slack.verification) {
 				return res.status(403).send("Invalid token");
 			}
-			if (req.body.hasOwnProperty("event")) {
+			if (req.body.hasOwnProperty('event')) {
 				console.log("Got event");
 				if (req.body.event.text == "Un café ?") {
 					console.log(req.body.event.text);

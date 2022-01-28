@@ -110,7 +110,7 @@ function build(projectname, branchName, target, callback) {
 		return callback(`No project named ${projectname}`);
 	} 
 	const project = config.projects[projectname];
-	if (!project.hasOwnProperty(targets) || project.targets.length === 0) {
+	if (!project.hasOwnProperty('targets') || project.targets.length === 0) {
 		return callback(`Project ${projectname} has no targets`);
 	}
 	if (!project.targets.hasOwnProperty(target)){
