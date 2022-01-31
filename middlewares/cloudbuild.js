@@ -139,6 +139,7 @@ function cancelAllBuild(projectname, callback) {
 		console.log(`No project named ${projectname}`);
 		return;
 	}
+	const project = config.projects[projectname];
 	const projectid = project.id;
 	const url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/_all/builds`;
 	deleteCall(url, function (err, data) {
