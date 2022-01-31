@@ -120,13 +120,13 @@ function build(projectname, branchName, target, callback) {
 	const buildtargetid = project.targets[target]
 	const url = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}`;
 	httpGet(url, function (err, data) {
-		if (err) return callback(err, "Unable to get build target" + url);
+		if (err) return callback(err, `Unable to get build target\n${url}`);
 		data.settings.scm.branch = branchName;
 		httpPut(url, data, function (err, _) {
-			if (err) return callback(err, "Unable to update branch" + url);
+			if (err) return callback(err, `Unable to update branch\n${url}`);
 			const buildUrl = `${config.unity.baseUrl}/orgs/${orgid}/projects/${projectid}/buildtargets/${buildtargetid}/builds`;
 			httpPost(buildUrl, function (err) {
-				if (err) return callback(err, "Unable to build target" + url);
+				if (err) return callback(err, `Unable to build target\n${url}`);
 				callback(err, "Built target" + buildUrl);
 			})
 		});
