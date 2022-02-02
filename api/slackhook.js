@@ -48,6 +48,8 @@ router.post('/', function (req, res, next) {
 				}
 			}
 			break;
+		default:
+			return res.status(200).send();
 	}
 
 
