@@ -21,7 +21,7 @@ function cancel(command, project, callback) {
 			callback(err);
 		});
 	}
-	if (project === null) {
+	if (project === null || project === undefined) {
 		unknownMessage(`Missing project name parameter.`,function (err) {
 			callback(err);
 		});

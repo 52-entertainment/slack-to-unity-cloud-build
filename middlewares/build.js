@@ -25,19 +25,19 @@ function build(command, project, gitRef, target, callback) {
 			callback(err);
 		});
 	}
-	if (project === null) {
+	if (project === null || project === undefined) {
 		unknownMessage(`Missing project name parameter.`,function (err) {
 			callback(err);
 		});
 		return
 	}
-	if (gitRef === null) {
+	if (gitRef === null || gitRef === undefined) {
 		unknownMessage(`Missing git reference parameter.`,function (err) {
 			callback(err);
 		});
 		return
 	}
-	if (target === null) {
+	if (target === null || target === undefined) {
 		unknownMessage(`Missing target parameter.`,function (err) {
 			callback(err);
 		});
