@@ -19,46 +19,43 @@ function getUsageString(){
 
 const help = ()=>`Use \`buildme\` to launch builds:\n${getUsageString().split('\n').map(s=>`\t${s}`).join('\n')}`
 
-function build(order, callback) {
-	const params = order.split(' ');
-	switch (params.length) {
-		case 2:
-			if (params[1] === "?") {
-				helpMessage(function (err) {
-					callback(err);
-				});
-			} else {
-				unknownMessage(function (err) {
-					callback(err);
-				});
-			}
-			break;
-		case 4:
-			const projectName = params[1];
-			const branchName = params[2];
-			const target = params[3];
-			cloudbuild.build(projectName, branchName, target, function (err, data) {
-				if (err) {
-					const msgToSend = `🛑 *Failed while requesting a build slot* 🛑\n${err}\n${data}`;
-					slack.sendMessageToSlack(msgToSend, function (err) {
-						callback(err);
-					});
-				} else {
-					const msgToSend = `Requesting build for project *${projectName}* on branch \`${branchName}\` for target: \`${target}\``;
-					slack.sendMessageToSlack(msgToSend, function (err) {
-						callback(err);
-					});
-				}
-
-			})
-			break;
-		default:
-			unknownMessage(function (err) {
+function build(command, project, gitRef, target, callback) {
+	if (project === '?'){
+		helpMessage(function (err) {
+			callback(err);
+		});
+	}
+	if (project === null) {
+		unknownMessage(`Missing project name parameter.`,function (err) {
+			callback(err);
+		});
+		return
+	}
+	if (gitRef === null) {
+		unknownMessage(`Missing git reference parameter.`,function (err) {
+			callback(err);
+		});
+		return
+	}
+	if (target === null) {
+		unknownMessage(`Missing target parameter.`,function (err) {
+			callback(err);
+		});
+		return
+	}
+	cloudbuild.build(project, gitRef, target, function (err, data) {
+		if (err) {
+			const msgToSend = `🛑 *Failed while requesting a build slot* 🛑\n${err}\n${data}`;
+			slack.sendMessageToSlack(msgToSend, function (err) {
 				callback(err);
 			});
-			break;
-	}
-
+		} else {
+			const msgToSend = `Requesting build for project *${project}* on branch \`${gitRef}\` for target: \`${target}\``;
+			slack.sendMessageToSlack(msgToSend, function (err) {
+				callback(err);
+			});
+		}
+	})
 }
 
 function helpMessage(callback) {
@@ -68,8 +65,8 @@ function helpMessage(callback) {
 	});
 }
 
-function unknownMessage(callback) {
-	const msgToSend = `Invalid command\n${getUsageString()}`
+function unknownMessage(problem, callback) {
+	const msgToSend = `Invalid command\n${problem}\n${getUsageString()}`
 	slack.sendMessageToSlack(msgToSend, function (err) {
 		callback(err);
 	});

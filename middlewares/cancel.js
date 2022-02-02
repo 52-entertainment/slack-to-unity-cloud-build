@@ -15,39 +15,32 @@ function getUsageString(){
 
 const help = ()=>`Use \`buildcancel\` to cancel builds:\n${getUsageString().split('\n').map(s=>`\t${s}`).join('\n')}`
 
-function cancel(order, callback) {
-	const params = order.split(' ');
-	if (params.length === 2) {
-
-		if (params[1] === "?") {
-			helpMessage(function (err) {
-				callback(err);
-				
-			});
-		} else {
-			const projectName = params[1];
-			cloudBuild.cancelAllBuild(projectName, function (err, data) {
-				if (err) {
-					const msgToSend = `🛑 *Failed while trying to cancel builds* 🛑\n${err}\n${data}`;
-					slack.sendMessageToSlack(msgToSend, function (err) {
-						callback(err)
-					});
-				} else {
-					const msgToSend = `Builds canceled for project \`${projectName}\``;
-					slack.sendMessageToSlack(msgToSend, function (err) {
-						callback(err);
-					});
-				}
-
-			});
-
-		}
-	} else {
-		unknownMessage(function (err) {
+function cancel(command, project, callback) {
+	if (project === '?'){
+		helpMessage(function (err) {
 			callback(err);
-			
 		});
 	}
+	if (project === null) {
+		unknownMessage(`Missing project name parameter.`,function (err) {
+			callback(err);
+		});
+		return
+	}
+	cloudBuild.cancelAllBuild(project, function (err, data) {
+		if (err) {
+			const msgToSend = `🛑 *Failed while trying to cancel builds* 🛑\n${err}\n${data}`;
+			slack.sendMessageToSlack(msgToSend, function (err) {
+				callback(err)
+			});
+		} else {
+			const msgToSend = `Builds canceled for project \`${project}\``;
+			slack.sendMessageToSlack(msgToSend, function (err) {
+				callback(err);
+			});
+		}
+
+	});
 }
 
 

@@ -1,61 +1,53 @@
-var router = require('express').Router();
-var slack = require('../middlewares/slack');
-var build = require('../middlewares/build');
-var cancel = require('../middlewares/cancel');
+const router = require('express').Router();
+const slack = require('../middlewares/slack');
+const build = require('../middlewares/build');
+const cancel = require('../middlewares/cancel');
+
+const commandRgx = /^(?<command>\S+)(?<parameters> (?<project>\S+)(?<ref> (?<gitref>\S+) (?<target>\S+))?)?$/g;
 
 router.post('/', function (req, res, next) {
 	console.log("slack hook called");
-
-	if (req.body.type == "url_verification") {
-		slack.signVerification(req, res, next);
-	} else {
-		console.log(req.body)
-		if (req.body.type == "event_callback") {
+	switch (req.body.type) {
+		case "url_verification":
+			console.log("URL verification requested")
+			slack.signVerification(req, res, next);
+			break;
+		case "event_callback":
 			if (req.body.token !== config.slack.verification) {
 				return res.status(403).send("Invalid token");
 			}
 			if (req.body.hasOwnProperty('event')) {
-				console.log("Got event");
-				if (req.body.event.text == "Un café ?") {
-					console.log(req.body.event.text);
-					const msgToSend = "Et un café un ! ";
-					slack.sendMessageToSlack(msgToSend, function (err, result) {
-						console.log("slack error : " + err);
-						console.log("slack message : " + result);
-					});
-					return res.status(200).send("☕️");
+				let match = commandRgx.exec(req.body.event.text);
+				if (match === null) {
+					return res.status(400).send("Could not find command");
 				}
-				if (req.body.event.text.toLowerCase().startsWith("help")) {
-					const msgToSend = `${build.help()}\n${cancel.help()}`
-					slack.sendMessageToSlack(msgToSend, function (err, result) {
-						console.log("slack error : " + err);
-						console.log("slack message : " + result);
-					});
-					return res.status(200).send("Got help");
+				switch (match.groups.command){
+					case 'help':
+						const msgToSend = `${build.help()}\n${cancel.help()}`
+						slack.sendMessageToSlack(msgToSend, function (err, result) {
+							console.log("slack error : " + err);
+							console.log("slack message : " + result);
+						});
+						return res.status(200).send("Got help");
+					case 'buildme':
+						build.build(match.groups.command, match.groups.project, match.groups.gitref, match.groups.target, function (err) {
+							if (err) console.log("buildme error : " + err);
+						});
+						return res.status(200).send("Build started");
+					case 'buildcancel':
+						cancel.cancel(match.groups.command, match.groups.project, function (err) {
+							if (err) {
+								console.log("buildCancel error : " + err);
+								return res.status(500).send("Unable to cancel build");
+							} else {
+								return res.status(200).send("Build canceled");
+							}
+						});
+					default:
+						return res.status(400).send("Unknown command");
 				}
-
-				if (req.body.event.text.toLowerCase().startsWith("buildme")) {
-					console.log(req.body.event.text);
-					build.build(req.body.event.text, function (err) {
-						if (err) console.log("buildme error : " + err);
-					});
-					return res.status(200).send("Build started");
-				}
-
-				if (req.body.event.text.toLowerCase().startsWith("buildcancel")) {
-					console.log('buildCancel:' + req.body.event.text);
-					cancel.cancel(req.body.event.text, function (err) {
-						if (err) {
-							console.log("buildCancel error : " + err);
-							return res.status(500).send("Unable to cancel build");
-						} else {
-							return res.status(200).send("Build canceled");
-						}
-					});
-				}
-				return res.status(400).send("Unknown command");
 			}
-		}
+			break;
 	}
 
 
