@@ -51,6 +51,7 @@ router.post('/', function (req, res, next) {
 								return res.status(200).send("Build canceled");
 							}
 						});
+						break;
 					default:
 						console.log(`Unknown command.\nText: ${req.body.event.text}`);
 						return res.status(200).send("Unknown command");
