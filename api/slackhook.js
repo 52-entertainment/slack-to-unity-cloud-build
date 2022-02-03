@@ -3,7 +3,7 @@ const slack = require('../middlewares/slack');
 const build = require('../middlewares/build');
 const cancel = require('../middlewares/cancel');
 
-const commandRgx = /^(?<command>\S+)(?<parameters> (?<project>\S+)(?<ref> (?<gitref>\S+) (?<target>\S+))?)?$/g;
+const commandRgx = /^\s*(?<command>\S+)(?<parameters>\s+(?<project>\S+)(?<ref>\s+(?<gitref>\S+)\s+(?<target>\S+))?)?\s*$/g;
 
 router.post('/', function (req, res, next) {
 	console.log("slack hook called");
