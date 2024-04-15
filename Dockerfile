@@ -8,6 +8,9 @@ WORKDIR /usr/src/app
 # where available (npm@5+)
 COPY package*.json ./
 
+# To avoid "express" run in dev mode
+ENV NODE_ENV=production
+
 RUN npm install
 
 # Bundle app source
