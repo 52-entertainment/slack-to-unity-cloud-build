@@ -44,7 +44,7 @@ router.post('/', function (req, res, next) {
 		console.log("Invalid token")
 		return res.status(403).send("Invalid token");
 	}
-	const buildNumber = req.body.buildNumber
+	const buildNumber = String(req.body.buildNumber).padStart(3, '0');
 	const buildStatus = req.body.buildStatus;
 	const buildTargetName = req.body.buildTargetName;
 	if (!config.targets.hasOwnProperty(buildTargetName)) {
@@ -58,7 +58,11 @@ router.post('/', function (req, res, next) {
 	const target = config.targets[buildTargetName];
 	
 	if (buildStatus === 'success'){
-		deploy.runScript(target.deploy, ()=>{
+		const commands = target.deploy.map((command) => command
+			.replace(/{date}/g, formatDate())
+			.replace(/{buildNumber}/g, buildNumber)
+		);
+		deploy.runScript(commands, ()=>{
 			const result = target.urlTemplate
 				.replace(/{date}/g, formatDate())
 				.replace(/{buildNumber}/g, buildNumber)
