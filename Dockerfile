@@ -1,5 +1,8 @@
 FROM node:12
 
+# Add non-root user
+RUN useradd -m non-root
+
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -17,4 +20,7 @@ RUN npm install
 COPY . .
 
 EXPOSE 4000
-USER non-root CMD [ "node", "server.js" ]
+
+# Switch user
+USER non-root
+CMD [ "node", "server.js" ]
