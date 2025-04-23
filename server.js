@@ -23,7 +23,7 @@ app.use(session({
 	resave: false,
 	saveUninitialized: true,
 	cookie: {
-		secure: true,
+		secure: false,
 		httpOnly: true,
 		domain: 'slack-ucb.52-entertainment.com',
 		expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
