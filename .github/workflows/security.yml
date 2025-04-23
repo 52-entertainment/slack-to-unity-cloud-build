@@ -1,0 +1,44 @@
+name: Semgrep Analysis on PR
+
+on:
+  pull_request:
+    # No branch filter means it will run on all PRs
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    env:
+      version: 1.1.0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # required to have full history and compare commits
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run security audit (semgrep)
+        env:
+          SECURITY_SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK_URL }}
+          SECURITY_SLACK_CHANNEL: ${{ secrets.SECURITY_SLACK_CHANNEL }}
+          URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          echo "Github Action version: $version"
+
+          echo "SECURITY_SLACK_WEBHOOK_URL=${SECURITY_SLACK_WEBHOOK_URL}" > config.env
+          echo "SECURITY_SLACK_CHANNEL=${SECURITY_SLACK_CHANNEL}" >> config.env
+          echo "URL=${URL}" >> config.env
+          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}" >> config.env
+          echo "GITHUB_REF=${GITHUB_REF}" >> config.env
+          echo "GITHUB_HEAD_REF=${GITHUB_HEAD_REF}" >> config.env
+          cat config.env
+
+          docker pull nbeguier/semgrep-analysis:latest >/dev/null 2>&1
+          docker run --rm -v $PWD:/app --env-file=config.env --user $(id -u):$(id -g) nbeguier/semgrep-analysis:latest
+
