@@ -18,11 +18,19 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 app.use(cookieParser());
 app.use(session({
+	name: 'connect.sid',
 	secret: config.key,
 	resave: false,
 	saveUninitialized: true,
-	cookie: {secure: false}
-}))
+	cookie: {
+		secure: true,
+		httpOnly: true,
+		domain: 'slack-ucb.52-entertainment.com',
+		expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+		path: '/',
+		sameSite: 'lax'
+	}
+}));
 
 app.use(flash());
 
