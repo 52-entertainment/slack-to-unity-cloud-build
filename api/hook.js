@@ -40,8 +40,8 @@ router.get('/', function (req, res, next) {
 
 })
 router.post('/', function (req, res, next) {
-	if (req.headers.authorization !== `Token ${config.unity.secret}`) {
-		console.log("Invalid token")
+	if (req.headers.authorization !== `Token ${config.unity.secret}` && req.headers['x-unity-shared-key'] !== config.unity.secret) {
+		console.log("Invalid token", req.headers.authorization || req.headers['x-unity-shared-key'])
 		return res.status(403).send("Invalid token");
 	}
 	const buildNumber = String(req.body.buildNumber).padStart(3, '0');
