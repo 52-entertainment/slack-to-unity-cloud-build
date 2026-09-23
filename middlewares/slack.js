@@ -1,7 +1,5 @@
 var axios = require('axios');
 const crypto = require('crypto');
-const qs = require('qs');
-const {hasUncaughtExceptionCaptureCallback} = require('process');
 // fetch this from environment variables
 const slackSigningSecret = config.slack.signingSecret;
 
@@ -27,7 +25,6 @@ function sendMessageToSlack(message, callback) {
 function signVerification(req, res, next) {
 	let slackSignature = req.headers['x-slack-signature'];
 	let requestBody = JSON.stringify(req.body);
-	//let requestBody = qs.stringify(req.body, {format : 'RFC1738'});
 	console.log(requestBody);
 	let timestamp = req.headers['x-slack-request-timestamp'];
 	let time = Math.floor(new Date().getTime() / 1000);
