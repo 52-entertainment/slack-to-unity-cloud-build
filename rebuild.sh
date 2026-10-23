@@ -1,9 +1,8 @@
 #!/bin/bash
-echo "Stop containers"
-docker stop $(docker ps -q)
-echo "Prune containers"
-yes | docker container prune
+set -e
 echo "Build new image"
-docker build . -t bradshaw/cloudbuild
-echo "Run image"
-docker run -p 4000:4000 --name cloudbuild -d bradshaw/cloudbuild
+docker build --pull . -t bradshaw/cloudbuild
+echo "Replace container"
+docker rm -f cloudbuild 2>/dev/null || true
+docker run -p 4000:4000 --name cloudbuild --restart unless-stopped -d bradshaw/cloudbuild
+docker exec cloudbuild node -v
