@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      version: 1.4.0
+      version: 1.4.1
 
     steps:
       - name: Checkout code
@@ -20,16 +20,18 @@ jobs:
         with:
           fetch-depth: 0 # required to have full history and compare commits
 
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
+      - name: Set up uv
+        # uv brings its own Python build, so this also works on self-hosted runners without Python 3.10+ (Amazon Linux)
+        uses: astral-sh/setup-uv@v10.3.2 # no floating major tag from v8 on
 
       - name: Install semgrep
+        env:
+          UV_TOOL_BIN_DIR: ${{ runner.temp }}/uv-bin
         run: |
           echo "Github Action version: $version"
-          pip install --upgrade semgrep
-          semgrep --version
+          uv tool install --python 3.13 semgrep
+          echo "$UV_TOOL_BIN_DIR" >> "$GITHUB_PATH"
+          "$UV_TOOL_BIN_DIR/semgrep" --version
 
       - name: Detect modified files
         shell: bash
